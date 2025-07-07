@@ -58,22 +58,36 @@ class _LoginPageState extends State<LoginPage> {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
-    return SingleChildScrollView(
-      child: SizedBox(
-        height: height,
-        child: Stack(
-          children: [
-            _buildBackgroundImage(),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: width * 0.1,
-                vertical: height * 0.07,
-              ),
-              child: _buildFormContent(height),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWeb = constraints.maxWidth >= 800;
+
+        return SingleChildScrollView(
+          child: SizedBox(
+            height: height,
+            child: Stack(
+              children: [
+                _buildBackgroundImage(),
+                Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWeb ? width * 0.2 : width * 0.1,
+                      vertical: height * 0.07,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isWeb ? 500 : double.infinity,
+                      ),
+                      child: _buildFormContent(height, isWeb),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -87,20 +101,21 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildFormContent(double height) {
+  Widget _buildFormContent(double height, bool isWeb) {
     return Form(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          SizedBox(height: height * 0.1),
+          SizedBox(height: height * (isWeb ? 0.05 : 0.1)),
           _buildWelcomeText(),
           SizedBox(height: height * 0.05),
           _buildTextFields(),
           SizedBox(height: height * 0.06),
           _buildLoginButton(),
           _buildForgotPasswordButton(),
-          const Spacer(),
+          const SizedBox(height: 32),
           _buildSignupRow(),
         ],
       ),
@@ -157,10 +172,12 @@ class _LoginPageState extends State<LoginPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        return GradientButton(
-          text: 'LOG IN',
-          onPressed: isLoading ? () {} : _handleLogin,
-          isLoading: isLoading,
+        return Center(
+          child: GradientButton(
+            text: 'LOG IN',
+            onPressed: isLoading ? () {} : _handleLogin,
+            isLoading: isLoading,
+          ),
         );
       },
     );
@@ -185,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildForgotPasswordButton() {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.center,
       child: TextButton(
         onPressed: () {
           context.push(RouteConstants.forgotPassword);

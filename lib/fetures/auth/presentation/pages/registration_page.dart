@@ -88,6 +88,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
@@ -100,46 +101,58 @@ class _RegistrationPageState extends State<RegistrationPage> {
               ),
             );
           } else if (state is AuthRegistrationSuccess) {
-            // Show success message and redirect to login
-            // _showSuccessDialog();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Regitration successful! Please log in."),
+                content: Text("Registration successful! Please log in."),
                 backgroundColor: Colors.green,
               ),
             );
             context.go(RouteConstants.login);
           }
         },
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(AppImages.registerBgImage),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            color: Colors.black.withAlpha(128),
-            padding: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: height * 0.05,
-            ),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  const Spacer(),
-                  _buildHeaderText(),
-                  const SizedBox(height: 15),
-                  _buildTextFields(),
-                  const Spacer(),
-                  _buildContinueButton(),
-                  const SizedBox(height: 12),
-                  _buildLoginRedirect(),
-                ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWeb = constraints.maxWidth >= 800;
+
+            return Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(AppImages.registerBgImage),
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-          ),
+              child: Container(
+                color: Colors.black.withAlpha(128),
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWeb ? width * 0.2 : 20,
+                  vertical: height * 0.05,
+                ),
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isWeb ? 500 : double.infinity,
+                    ),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 24),
+                          _buildHeaderText(),
+                          const SizedBox(height: 20),
+                          _buildTextFields(),
+                          const SizedBox(height: 30),
+                          _buildContinueButton(),
+                          const SizedBox(height: 16),
+                          _buildLoginRedirect(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

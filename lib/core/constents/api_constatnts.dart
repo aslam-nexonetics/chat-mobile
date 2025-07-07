@@ -7,4 +7,7 @@ class ApiUrls {
   static const logout = '/auth/logut/';
   static const refreshToken = '/auth/refresh/';
   static const updateFcmToken = "/user/fbs_token/";
+
+  // User URLs
+  static const getCurrentUser = '/auth/me/';
 }

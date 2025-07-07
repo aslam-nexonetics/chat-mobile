@@ -5,6 +5,7 @@ import 'package:chat_mobile/fetures/auth/presentation/bloc/auth_state.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/login_page.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/registration_page.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/splash_page.dart';
+import 'package:chat_mobile/fetures/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,6 +63,11 @@ class AppRouter {
         path: RouteConstants.onboarding,
         name: 'onboarding',
         builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: RouteConstants.home,
+        name: 'home',
+        builder: (context, state) => const HomeScreen(),
       ),
 
       // // Main App Shell with Bottom Navigation
@@ -298,7 +304,6 @@ class AppRouter {
     final authState = authBloc.state;
 
     final isLoggedIn = authState is AuthAuthenticated;
-    final isLoading = authState is AuthLoading;
     final isOnSplash = state.matchedLocation == RouteConstants.splash;
     final isOnAuthPage = [
       RouteConstants.login,
@@ -306,19 +311,14 @@ class AppRouter {
       RouteConstants.forgotPassword,
     ].contains(state.matchedLocation);
 
-    // Show splash during loading unless we're already on splash
-    if (isLoading && !isOnSplash) {
-      return RouteConstants.splash;
-    }
-
-    // If not loading and not logged in, go to login unless on auth pages
-    if (!isLoading && !isLoggedIn && !isOnAuthPage) {
-      return RouteConstants.login;
-    }
-
     // If logged in and on auth pages, go to home
     if (isLoggedIn && isOnAuthPage) {
       return RouteConstants.home;
+    }
+
+    // If not logged in and not on auth pages or splash, go to login
+    if (!isLoggedIn && !isOnAuthPage && !isOnSplash) {
+      return RouteConstants.login;
     }
 
     return null;
@@ -457,11 +457,6 @@ class GoRouterRefreshStream extends ChangeNotifier {
 }
 
 // Placeholder pages - these should be replaced with actual implementations
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-  @override
-  Widget build(BuildContext context) => const Placeholder();
-}
 
 class CollectionsPage extends StatelessWidget {
   const CollectionsPage({super.key});

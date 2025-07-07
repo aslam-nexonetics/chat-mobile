@@ -5,6 +5,8 @@ import 'package:chat_mobile/fetures/auth/data/models/register_user_params.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/login_usecase.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/logout_usecase.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/register_usecase.dart';
+import 'package:chat_mobile/fetures/user/presentation/cubit/user_cubit.dart';
+import 'package:chat_mobile/service_locator.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -34,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final token = await tokenManager.getAccessToken();
 
       if (token != null && token.isNotEmpty) {
+        await sl<UserCubit>().loadUser();
         emit(AuthAuthenticated());
       } else {
         emit(AuthUnauthenticated());
@@ -56,10 +59,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
 
-      result.fold(
-        (failure) => emit(AuthFailure(failure.message)),
-        (success) => emit(AuthAuthenticated()),
-      );
+      result.fold((failure) => emit(AuthFailure(failure.message)), (
+        success,
+      ) async {
+        await sl<UserCubit>().loadUser();
+        emit(AuthAuthenticated());
+      });
     } catch (e) {
       emit(AuthFailure('Login failed: ${e.toString()}'));
     }
@@ -117,6 +122,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     if (event.isAuthenticated) {
+      await sl<UserCubit>().loadUser();
       emit(AuthAuthenticated());
     } else {
       emit(AuthUnauthenticated());
