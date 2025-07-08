@@ -12,6 +12,11 @@ import 'package:chat_mobile/fetures/auth/domain/usecases/login_usecase.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/logout_usecase.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/register_usecase.dart';
 import 'package:chat_mobile/fetures/auth/presentation/bloc/auth_bloc.dart';
+import 'package:chat_mobile/fetures/collections/data/datasources/collection_remote_datasource.dart';
+import 'package:chat_mobile/fetures/collections/data/repositories/collection_repository_impl.dart';
+import 'package:chat_mobile/fetures/collections/domain/repositories/collection_repository.dart';
+import 'package:chat_mobile/fetures/collections/domain/usecases/get_all_collections.dart';
+import 'package:chat_mobile/fetures/collections/presentation/cubit/collections_cubit.dart';
 import 'package:chat_mobile/fetures/user/data/datasources/user_local_datasource.dart';
 import 'package:chat_mobile/fetures/user/data/datasources/user_remote_datasource.dart';
 import 'package:chat_mobile/fetures/user/data/repositories/user_repository_impl.dart';
@@ -133,4 +138,28 @@ Future<void> setupServiceLocator() async {
 
   // Cubit
   sl.registerLazySingleton<UserCubit>(() => UserCubit(userRepository: sl()));
+
+  //--------------------------------------------------------------------------
+  // Feature: Collections
+  //--------------------------------------------------------------------------
+
+  // Data Sources
+  sl.registerSingleton<CollectionsRemoteDataSource>(
+    CollectionsRemoteDataSourceImpl(apiClient: sl()),
+  );
+
+  // Repositories
+  sl.registerSingleton<CollectionsRepository>(
+    CollectionsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<GetAllCOllectionUsecase>(
+    () => GetAllCOllectionUsecase(repository: sl()),
+  );
+
+  // Cubit
+  sl.registerLazySingleton<CollectionsCubit>(
+    () => CollectionsCubit(getAllCollectionsUsecase: sl()),
+  );
 }

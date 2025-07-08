@@ -5,7 +5,10 @@ import 'package:chat_mobile/fetures/auth/presentation/bloc/auth_state.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/login_page.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/registration_page.dart';
 import 'package:chat_mobile/fetures/auth/presentation/pages/splash_page.dart';
+import 'package:chat_mobile/fetures/collections/presentation/cubit/collections_cubit.dart';
+import 'package:chat_mobile/fetures/collections/presentation/pages/all_collections_page.dart';
 import 'package:chat_mobile/fetures/home/presentation/pages/home_page.dart';
+import 'package:chat_mobile/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,6 +71,15 @@ class AppRouter {
         path: RouteConstants.home,
         name: 'home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: RouteConstants.allCollections,
+        name: 'all_collections',
+        builder:
+            (context, state) => BlocProvider(
+              create: (context) => sl<CollectionsCubit>(),
+              child: AllCollectionsPage(),
+            ),
       ),
 
       // // Main App Shell with Bottom Navigation

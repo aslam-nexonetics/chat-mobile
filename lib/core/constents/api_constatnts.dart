@@ -10,4 +10,7 @@ class ApiUrls {
 
   // User URLs
   static const getCurrentUser = '/auth/me/';
+
+  // Collection URLs
+  static const getAllCollections = '/collections/';
 }

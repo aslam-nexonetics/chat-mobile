@@ -16,7 +16,7 @@ class RouteConstants {
   static const String notifications = '/notifications';
 
   // Collection Routes
-  static const String collectionDetail = '/collection/:id';
+  static const String allCollections = '/all_collections';
   static const String collectionHome = '/collection/:id/home';
   static const String collectionChat = '/collection/:id/chat';
   static const String collectionProfile = '/collection/:id/profile';
@@ -28,13 +28,18 @@ class RouteConstants {
 
   // Chat Routes
   static const String chatRoom = '/collection/:collectionId/chat/:chatId';
-  static const String chatSettings = '/collection/:collectionId/chat/:chatId/settings';
-  static const String chatMembers = '/collection/:collectionId/chat/:chatId/members';
-  static const String chatMedia = '/collection/:collectionId/chat/:chatId/media';
+  static const String chatSettings =
+      '/collection/:collectionId/chat/:chatId/settings';
+  static const String chatMembers =
+      '/collection/:collectionId/chat/:chatId/members';
+  static const String chatMedia =
+      '/collection/:collectionId/chat/:chatId/media';
 
   // Call Routes
-  static const String voiceCall = '/collection/:collectionId/call/voice/:callId';
-  static const String videoCall = '/collection/:collectionId/call/video/:callId';
+  static const String voiceCall =
+      '/collection/:collectionId/call/voice/:callId';
+  static const String videoCall =
+      '/collection/:collectionId/call/video/:callId';
   static const String incomingCall = '/call/incoming/:callId';
   static const String callHistory = '/call/history';
 
@@ -67,8 +72,10 @@ class RouteConstants {
 
   // Learning Collection Specific Routes
   static const String learningCourses = '/collection/:id/learning/courses';
-  static const String learningCourse = '/collection/:id/learning/course/:courseId';
-  static const String learningLesson = '/collection/:id/learning/lesson/:lessonId';
+  static const String learningCourse =
+      '/collection/:id/learning/course/:courseId';
+  static const String learningLesson =
+      '/collection/:id/learning/lesson/:lessonId';
   static const String learningQuiz = '/collection/:id/learning/quiz/:quizId';
   static const String learningProgress = '/collection/:id/learning/progress';
   static const String learningProfile = '/collection/:id/learning/profile';
@@ -80,7 +87,8 @@ class RouteConstants {
   static const String gamingLeaderboard = '/collection/:id/gaming/leaderboard';
   static const String gamingProfile = '/collection/:id/gaming/profile';
   static const String gamingSettings = '/collection/:id/gaming/settings';
-  static const String gamingTournament = '/collection/:id/gaming/tournament/:tournamentId';
+  static const String gamingTournament =
+      '/collection/:id/gaming/tournament/:tournamentId';
 
   // Profile Routes
   static const String editProfile = '/profile/edit';
@@ -149,7 +157,11 @@ class RouteConstants {
         .replaceAll(':chatId', chatId);
   }
 
-  static String getCallRoute(String collectionId, String callId, {bool isVideo = false}) {
+  static String getCallRoute(
+    String collectionId,
+    String callId, {
+    bool isVideo = false,
+  }) {
     final route = isVideo ? videoCall : voiceCall;
     return route
         .replaceAll(':collectionId', collectionId)

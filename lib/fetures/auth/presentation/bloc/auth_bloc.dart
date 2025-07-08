@@ -59,12 +59,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
 
-      result.fold((failure) => emit(AuthFailure(failure.message)), (
-        success,
-      ) async {
-        await sl<UserCubit>().loadUser();
-        emit(AuthAuthenticated());
-      });
+      await result.fold(
+        (failure) async {
+          emit(AuthFailure(failure.message));
+        },
+        (success) async {
+          await sl<UserCubit>().loadUser();
+          emit(AuthAuthenticated());
+        },
+      );
     } catch (e) {
       emit(AuthFailure('Login failed: ${e.toString()}'));
     }
