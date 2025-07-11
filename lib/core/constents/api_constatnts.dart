@@ -13,4 +13,7 @@ class ApiUrls {
 
   // Collection URLs
   static const getAllCollections = '/collections/';
+  static const getMyCollections = '/user-collections/my-collections/';
+  static addUserToCollection(String collectionId) =>
+      '/collections/$collectionId/users';
 }

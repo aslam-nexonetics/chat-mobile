@@ -13,9 +13,13 @@ import 'package:chat_mobile/fetures/auth/domain/usecases/logout_usecase.dart';
 import 'package:chat_mobile/fetures/auth/domain/usecases/register_usecase.dart';
 import 'package:chat_mobile/fetures/auth/presentation/bloc/auth_bloc.dart';
 import 'package:chat_mobile/fetures/collections/data/datasources/collection_remote_datasource.dart';
+import 'package:chat_mobile/fetures/collections/data/datasources/collections_local_datasource.dart';
 import 'package:chat_mobile/fetures/collections/data/repositories/collection_repository_impl.dart';
 import 'package:chat_mobile/fetures/collections/domain/repositories/collection_repository.dart';
+import 'package:chat_mobile/fetures/collections/domain/usecases/add_user_to_collection.dart';
 import 'package:chat_mobile/fetures/collections/domain/usecases/get_all_collections.dart';
+import 'package:chat_mobile/fetures/collections/domain/usecases/get_my_collection.dart';
+import 'package:chat_mobile/fetures/collections/domain/usecases/refresh_my_collections.dart';
 import 'package:chat_mobile/fetures/collections/presentation/cubit/collections_cubit.dart';
 import 'package:chat_mobile/fetures/user/data/datasources/user_local_datasource.dart';
 import 'package:chat_mobile/fetures/user/data/datasources/user_remote_datasource.dart';
@@ -147,19 +151,38 @@ Future<void> setupServiceLocator() async {
   sl.registerSingleton<CollectionsRemoteDataSource>(
     CollectionsRemoteDataSourceImpl(apiClient: sl()),
   );
+  sl.registerSingleton<CollectionsLocalDatasource>(
+    CollectionsLocalDatasourceImpl(hiveStorage: sl()),
+  );
 
   // Repositories
   sl.registerSingleton<CollectionsRepository>(
-    CollectionsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+    CollectionsRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+      localDataSource: sl(),
+    ),
   );
 
   // Use Cases
   sl.registerLazySingleton<GetAllCOllectionUsecase>(
     () => GetAllCOllectionUsecase(repository: sl()),
   );
+  sl.registerLazySingleton<GetMyCollectionUsecase>(
+    () => GetMyCollectionUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<RefreshMyCollectionUsecase>(
+    () => RefreshMyCollectionUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<AddUserToCollectionUsecase>(
+    () => AddUserToCollectionUsecase(repository: sl()),
+  );
 
   // Cubit
   sl.registerLazySingleton<CollectionsCubit>(
-    () => CollectionsCubit(getAllCollectionsUsecase: sl()),
+    () => CollectionsCubit(
+      getAllCollectionsUsecase: sl(),
+      addUserToCollectionUsecase: sl(),
+    ),
   );
 }

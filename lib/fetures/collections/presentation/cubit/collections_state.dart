@@ -16,27 +16,46 @@ class CollectionsLoaded extends CollectionsState {
   final List<Collection> collections;
   final List<Collection> filteredCollections;
   final String searchQuery;
+  final bool isJoining;
+  final String? joinError;
+  final bool joinSuccess;
 
   const CollectionsLoaded({
     required this.collections,
     required this.filteredCollections,
     this.searchQuery = '',
+    this.isJoining = false,
+    this.joinError,
+    this.joinSuccess = false,
   });
-
-  @override
-  List<Object?> get props => [collections, filteredCollections, searchQuery];
 
   CollectionsLoaded copyWith({
     List<Collection>? collections,
     List<Collection>? filteredCollections,
     String? searchQuery,
+    bool? isJoining,
+    String? joinError,
+    bool? joinSuccess,
   }) {
     return CollectionsLoaded(
       collections: collections ?? this.collections,
       filteredCollections: filteredCollections ?? this.filteredCollections,
       searchQuery: searchQuery ?? this.searchQuery,
+      isJoining: isJoining ?? this.isJoining,
+      joinError: joinError,
+      joinSuccess: joinSuccess ?? this.joinSuccess,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    collections,
+    filteredCollections,
+    searchQuery,
+    isJoining,
+    joinError,
+    joinSuccess,
+  ];
 }
 
 class CollectionsError extends CollectionsState {
@@ -45,5 +64,5 @@ class CollectionsError extends CollectionsState {
   const CollectionsError({required this.message});
 
   @override
-  List<Object?> get props => [message];
+  List<Object> get props => [message];
 }

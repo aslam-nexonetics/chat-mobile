@@ -2,6 +2,8 @@ import 'package:chat_mobile/core/theme/app_colors.dart';
 import 'package:chat_mobile/fetures/collections/domain/entities/collection_entity.dart';
 import 'package:chat_mobile/fetures/collections/presentation/cubit/collections_cubit.dart';
 import 'package:chat_mobile/fetures/collections/presentation/cubit/collections_state.dart';
+import 'package:chat_mobile/fetures/user/presentation/cubit/user_cubit.dart';
+import 'package:chat_mobile/service_locator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -316,7 +318,7 @@ class _AllCollectionsPageState extends State<AllCollectionsPage> {
           final collection = collections[index];
           return _buildCollectionCard(
             collection: collection,
-            onTap: () => _showJoinDialog(context, collection),
+            onTap: () => showJoinDialog(context, collection),
             isGrid: true,
           );
         },
@@ -336,7 +338,7 @@ class _AllCollectionsPageState extends State<AllCollectionsPage> {
           final collection = collections[index];
           return _buildCollectionCard(
             collection: collection,
-            onTap: () => _showJoinDialog(context, collection),
+            onTap: () => showJoinDialog(context, collection),
             isGrid: false,
           );
         },
@@ -515,72 +517,147 @@ class _AllCollectionsPageState extends State<AllCollectionsPage> {
     );
   }
 
-  void _showJoinDialog(BuildContext context, Collection collection) {
+  void showJoinDialog(BuildContext context, Collection collection) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth > 768;
 
+    // Get the cubit instance from the current context
+    final collectionsCubit = context.read<CollectionsCubit>();
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isLargeScreen ? 24 : 20),
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return BlocProvider.value(
+          value: collectionsCubit, // Provide the cubit to the dialog
+          child: BlocConsumer<CollectionsCubit, CollectionsState>(
+            listener: (context, state) {
+              if (state is CollectionsLoaded) {
+                if (state.joinSuccess) {
+                  // Close dialog and show success message
+                  Navigator.of(dialogContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Successfully joined "${collection.collectionName}"',
+                      ),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                  // Clear the join status
+                  context.read<CollectionsCubit>().clearJoinStatus();
+                } else if (state.joinError != null) {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.joinError!),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            },
+            builder: (context, state) {
+              final isJoining = state is CollectionsLoaded && state.isJoining;
+
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(isLargeScreen ? 24 : 20),
+                ),
+                contentPadding: EdgeInsets.all(isLargeScreen ? 32 : 24),
+                title: Text(
+                  'Join Collection',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: isLargeScreen ? 24 : 20,
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Do you want to join "${collection.collectionName}"?',
+                      style: TextStyle(fontSize: isLargeScreen ? 18 : 16),
+                    ),
+                    if (isJoining) ...[
+                      const SizedBox(height: 16),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 12),
+                          Text('Joining collection...'),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed:
+                        isJoining
+                            ? null
+                            : () {
+                              Navigator.of(dialogContext).pop();
+                            },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isLargeScreen ? 24 : 16,
+                        vertical: isLargeScreen ? 12 : 8,
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: isJoining ? Colors.grey : Colors.grey[600],
+                        fontSize: isLargeScreen ? 16 : 14,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed:
+                        isJoining
+                            ? null
+                            : () async {
+                              // Get user ID from UserCubit
+                              final userId =
+                                  (sl<UserCubit>().state.user?.id ?? 0)
+                                      .toString();
+
+                              // Call join collection
+                              context.read<CollectionsCubit>().joinCollection(
+                                userId: userId,
+                                collectionId: (collection.id).toString(),
+                              );
+                            },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isJoining ? Colors.grey : AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isLargeScreen ? 24 : 16,
+                        vertical: isLargeScreen ? 12 : 8,
+                      ),
+                    ),
+                    child: Text(
+                      isJoining ? 'Joining...' : 'Join',
+                      style: TextStyle(
+                        fontSize: isLargeScreen ? 16 : 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          contentPadding: EdgeInsets.all(isLargeScreen ? 32 : 24),
-          title: Text(
-            'Join Collection',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: isLargeScreen ? 24 : 20,
-            ),
-          ),
-          content: Text(
-            'Do you want to join "${collection.collectionName}"?',
-            style: TextStyle(fontSize: isLargeScreen ? 18 : 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isLargeScreen ? 24 : 16,
-                  vertical: isLargeScreen ? 12 : 8,
-                ),
-              ),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: isLargeScreen ? 16 : 14,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                // TODO: Implement join collection logic
-                // You might want to add a join collection usecase and call it here
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isLargeScreen ? 24 : 16,
-                  vertical: isLargeScreen ? 12 : 8,
-                ),
-              ),
-              child: Text(
-                'Join',
-                style: TextStyle(
-                  fontSize: isLargeScreen ? 16 : 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
         );
       },
     );
